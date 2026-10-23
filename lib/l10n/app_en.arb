@@ -2897,5 +2897,16 @@
   "purchaseBillMgmtColTaxPercent": "Tax %",
   "purchaseBillMgmtPaymentRecordedMessage": "Payment recorded.",
   "invoiceSettingsMetadataColumnsGridClassicNote": "Note: Metadata columns print on A4 PDF templates only (not A5/A6 or thermal receipts).",
-  "invoiceSettingsCustomFieldsPageSupportNote": "Custom fields print on every PDF template except thermal receipts."
+  "invoiceSettingsCustomFieldsPageSupportNote": "Custom fields print on every PDF template except thermal receipts.",
+  "serverSettingsTitle": "Server",
+  "serverSettingsTooltip": "Server settings",
+  "serverSettingsUrlLabel": "Server address",
+  "serverSettingsUrlHint": "e.g. https://your-app.up.railway.app or http://192.168.1.10:8080",
+  "serverSettingsHelp": "Your data is stored on this server. Use the address of your Railway deployment or the machine running docker compose.",
+  "serverSettingsTestButton": "Test connection",
+  "serverSettingsTesting": "Connecting…",
+  "serverSettingsConnected": "Connected — server version {version}",
+  "@serverSettingsConnected": {"placeholders": {"version": {"type": "String"}}},
+  "serverSettingsFailed": "Could not connect: {error}",
+  "@serverSettingsFailed": {"placeholders": {"error": {"type": "String"}}}
 }

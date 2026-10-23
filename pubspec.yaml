@@ -16,6 +16,8 @@ dependencies:
   printing: ^5.11.0
   sqflite: ^2.3.0
   sqflite_common_ffi: ^2.3.6
+  invoiso_core:
+    path: packages/invoiso_core
   path: ^1.8.3
   path_provider: ^2.0.15
   shared_preferences: ^2.3.2

@@ -1,0 +1,8 @@
+# Only the server and its packages go into the image.
+*
+!packages/invoiso_core/
+!packages/invoiso_pg/
+!server/
+**/.dart_tool/
+**/build/
+**/.packages

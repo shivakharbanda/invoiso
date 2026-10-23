@@ -30,6 +30,7 @@ void main() {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
     tmp = Directory.systemTemp.createTempSync('invoiso_status_test');
+    DatabaseHelper.dataDirectoryProvider = () async => tmp.path;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
             const MethodChannel('plugins.flutter.io/path_provider'),

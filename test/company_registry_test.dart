@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:invoiso/common/app_config.dart';
 import 'package:invoiso/database/company_info_service.dart';
 import 'package:invoiso/database/company_registry_service.dart';
 import 'package:invoiso/database/database_helper.dart';
@@ -18,9 +19,11 @@ void main() {
   late Directory tmp;
 
   setUpAll(() {
+    AppConfig.useServer = false;
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
     tmp = Directory.systemTemp.createTempSync('invoiso_registry_test');
+    DatabaseHelper.dataDirectoryProvider = () async => tmp.path;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
             const MethodChannel('plugins.flutter.io/path_provider'),

@@ -2,6 +2,11 @@
 class AppConfig
 {
   static const kIsCloud = false;
+  /// Data lives on the invoiso server (Railway / docker compose), not in a
+  /// local SQLite file. Build with --dart-define=LOCAL_MODE=true for the
+  /// original offline behaviour.
+  // Not const so tests of the local mode can switch it off.
+  static bool useServer = !bool.fromEnvironment('LOCAL_MODE');
   static const name = "invoiso";
   static const version = "v4.4.8";
   static const developer = "ANOOP P";

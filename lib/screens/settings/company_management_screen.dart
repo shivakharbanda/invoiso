@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:invoiso/common/app_config.dart';
 import 'package:invoiso/common/constants.dart';
 import 'package:invoiso/common/setting_key.dart';
 import 'package:invoiso/database/company_registry_service.dart';
@@ -14,6 +15,7 @@ import 'package:invoiso/providers/repositories.dart';
 import 'package:invoiso/providers/theme_provider.dart';
 import 'package:invoiso/utils/company_switch_navigation.dart';
 import 'package:invoiso/utils/window_title.dart';
+import 'package:invoiso_core/rpc/rpc_client.dart';
 
 /// Lists every company registered on this device, with actions to switch,
 /// create, or (self-only) rename/delete. Reused from two entry points:
@@ -299,6 +301,24 @@ class _CompanyManagementScreenState
     final username = usernameController.text.trim();
     final password = passwordController.text;
 
+    if (AppConfig.useServer) {
+      // The server creates the company with these credentials; switching
+      // to it means logging in there.
+      try {
+        final profile = await CompanyRegistryService.createCompanyOnServer(
+            name, username, password);
+        await CompanyRegistryService.switchToCompany(profile.id);
+      } on RpcException catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.message)));
+        return;
+      }
+      if (!mounted) return;
+      await returnToLoginAfterCompanyChange(context, ref);
+      return;
+    }
+
     final profile = await CompanyRegistryService.createCompany(name);
     await CompanyRegistryService.switchToCompany(profile.id);
 
@@ -421,6 +441,13 @@ class _CompanyManagementScreenState
     if (confirmed != true || !mounted) return;
 
     final isActive = company.id == _activeId;
+    if (AppConfig.useServer && isActive) {
+      // The session belongs to this company; the server refuses to delete
+      // it from under itself.
+      _showErrorDialog(
+          'Log in to another company first, then delete "${company.name}" from there.');
+      return;
+    }
     if (isActive) {
       // Removing the active company — hand off to whichever other company
       // remains before deleting, so the app always has one to load.

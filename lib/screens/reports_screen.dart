@@ -10,6 +10,7 @@ import 'package:invoiso/common/common.dart';
 import 'package:invoiso/common/constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoiso/database/report_service.dart';
+import 'package:invoiso/services/report_export_service.dart';
 import 'package:invoiso/models/cash_ledger_entry.dart';
 import 'package:invoiso/l10n/app_localizations.dart';
 import 'package:invoiso/services/customer_statement_pdf_service.dart';
@@ -1391,7 +1392,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           _exportBtn(l10n.reportsExportCsvLabel, () async {
-                            final csv = ReportService.exportTrendCsv(_trend);
+                            final csv = ReportExportService.exportTrendCsv(_trend);
                             await _saveCsv(csv, 'revenue_report_$ts.csv');
                           }),
                           const SizedBox(width: 4),
@@ -1399,7 +1400,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                               () async {
                             final (from, to) = _range;
                             final bytes =
-                                await ReportService.exportRevenueReportPdf(
+                                await ReportExportService.exportRevenueReportPdf(
                               _trend,
                               _kpi,
                               currencySymbol: _sym,
@@ -1836,7 +1837,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               _exportBtn(l10n.reportsExportCsvLabel, () async {
-                                final csv = ReportService
+                                final csv = ReportExportService
                                     .exportAgedReceivableSummaryCsv(
                                         _agedSummary);
                                 await _saveCsv(
@@ -1890,7 +1891,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                           children: [
                             _exportBtn(l10n.reportsExportCsvLabel, () async {
                               final csv =
-                                  ReportService.exportAgedReceivablesCsv(_aged);
+                                  ReportExportService.exportAgedReceivablesCsv(_aged);
                               await _saveCsv(
                                   csv, 'aged_receivables_$ts.csv');
                             }),
@@ -1942,7 +1943,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   }
 
   Future<void> _exportArAgingPdf(int ts) async {
-    final bytes = await ReportService.exportAgedReceivablesPdf(
+    final bytes = await ReportExportService.exportAgedReceivablesPdf(
       _agedSummary,
       _aged,
       currencySymbol: _sym,
@@ -2332,7 +2333,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                           children: [
                             _exportBtn(l10n.reportsExportCsvLabel, () async {
                               final csv =
-                                  ReportService.exportTaxCsv(_taxBuckets);
+                                  ReportExportService.exportTaxCsv(_taxBuckets);
                               await _saveCsv(csv, 'tax_report_$ts.csv');
                             }),
                             const SizedBox(width: 4),
@@ -2340,7 +2341,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                                 () async {
                               final (from, to) = _range;
                               final bytes =
-                                  await ReportService.exportTaxReportPdf(
+                                  await ReportExportService.exportTaxReportPdf(
                                 _taxBuckets,
                                 currencySymbol: _sym,
                                 showFooterBranding: _showFooterBranding,
@@ -2597,7 +2598,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       AppLocalizations.of(context)!.reportsExportCsvLabel,
                       () async {
                     final csv =
-                        ReportService.exportTopCustomersCsv(_topCustomers);
+                        ReportExportService.exportTopCustomersCsv(_topCustomers);
                     await _saveCsv(csv, 'top_customers_$ts.csv');
                   }),
                   const SizedBox(width: 4),
@@ -2605,7 +2606,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       AppLocalizations.of(context)!
                           .customerMgmtExportPdfMenuLabel, () async {
                     final (from, to) = _range;
-                    final bytes = await ReportService.exportTopCustomersPdf(
+                    final bytes = await ReportExportService.exportTopCustomersPdf(
                       _topCustomers,
                       currencySymbol: _sym,
                       showFooterBranding: _showFooterBranding,
@@ -2798,7 +2799,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _exportBtn(l10n.reportsExportCsvLabel, () async {
-                        final csv = ReportService.exportCustomerStatementsCsv(
+                        final csv = ReportExportService.exportCustomerStatementsCsv(
                             visibleStatements);
                         await _saveCsv(csv, 'customer_statement_$ts.csv');
                       }),
@@ -3190,7 +3191,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                                       AppLocalizations.of(context)!
                                           .reportsExportCsvLabel, () async {
                                     final csv =
-                                        ReportService.exportTopProductsCsv(
+                                        ReportExportService.exportTopProductsCsv(
                                             _topProducts);
                                     await _saveCsv(csv, 'top_products_$ts.csv');
                                   }),
@@ -3200,7 +3201,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                                           .customerMgmtExportPdfMenuLabel,
                                       () async {
                                     final (from, to) = _range;
-                                    final bytes = await ReportService
+                                    final bytes = await ReportExportService
                                         .exportTopProductsPdf(
                                       _topProducts,
                                       currencySymbol: _sym,
@@ -3554,7 +3555,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                               final rows = await ref
                                   .read(reportRepositoryProvider)
                                   .getInventoryValuationRows(limit: null);
-                              final csv = ReportService
+                              final csv = ReportExportService
                                   .exportInventoryValuationCsv(
                                       rows, _inventorySummary);
                               await _saveCsv(csv, 'inventory_valuation_$ts.csv');
@@ -3565,7 +3566,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                               final rows = await ref
                                   .read(reportRepositoryProvider)
                                   .getInventoryValuationRows(limit: null);
-                              final bytes = await ReportService
+                              final bytes = await ReportExportService
                                   .exportInventoryValuationPdf(
                                 rows,
                                 _inventorySummary,
@@ -3731,7 +3732,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                                   _exportBtn(l10n.reportsExportCsvLabel,
                                       () async {
                                     final csv =
-                                        ReportService.exportDailyReportCsv(
+                                        ReportExportService.exportDailyReportCsv(
                                             _dailyLines,
                                             cashUpi: _cashUpi);
                                     await _saveCsv(csv, 'daily_report_$ts.csv');
@@ -3741,7 +3742,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                                       l10n.customerMgmtExportPdfMenuLabel,
                                       () async {
                                     final (from, to) = _dailyRange;
-                                    final bytes = await ReportService
+                                    final bytes = await ReportExportService
                                         .exportDailyReportPdf(
                                       _dailyLines,
                                       currencySymbol: _sym,
@@ -4440,7 +4441,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               _exportBtn(l10n.reportsExportCsvLabel, () async {
-                                final csv = ReportService
+                                final csv = ReportExportService
                                     .exportInvoiceStatusCsv(filtered);
                                 await _saveCsv(
                                     csv, 'invoice_status_$ts.csv');
@@ -4459,7 +4460,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                                   _InvoiceFilter.overdue =>
                                     l10n.dashboardOverdueSectionTitle,
                                 };
-                                final bytes = await ReportService
+                                final bytes = await ReportExportService
                                     .exportInvoiceStatusPdf(
                                   filtered,
                                   currencySymbol: _sym,

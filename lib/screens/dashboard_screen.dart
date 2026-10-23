@@ -50,6 +50,7 @@ import 'package:invoiso/screens/auth/login_screen.dart';
 import 'package:invoiso/screens/reports_screen.dart';
 import 'package:invoiso/screens/purchase_bill_management_screen.dart';
 import 'package:invoiso/screens/supplier_management_screen.dart';
+import 'package:invoiso/screens/spend/spend_screen.dart';
 
 // invoice.type is a raw internal value ('Invoice'/'Quotation'/'Receipt') used
 // for comparisons throughout this file — only the displayed label is localized.
@@ -413,6 +414,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             : Center(
                 child: Text(
                     AppLocalizations.of(context)!.dashboardUnknownTabLabel));
+      case 12:
+        return SpendScreen(user: _currentUser);
       default:
         return Center(
             child:
@@ -887,6 +890,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     if (!_reportsLocked)
                       _buildNavItem(7, Icons.bar_chart_outlined, Icons.bar_chart,
                           AppLocalizations.of(context)!.navReports),
+                    _buildNavItem(12, Icons.payments_outlined, Icons.payments,
+                        'Spend'),
                     if (showPurchaseBillsAndSuppliers) ...[
                       _buildNavItem(10, Icons.shopping_cart_outlined,
                           Icons.shopping_cart, AppLocalizations.of(context)!.navPurchaseBills),

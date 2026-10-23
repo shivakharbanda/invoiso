@@ -7,7 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:invoiso/common/app_config.dart';
 import 'package:invoiso/database/company_info_service.dart';
+import 'package:invoiso/services/server/app_server.dart';
 import 'package:invoiso/database/database_helper.dart';
 import 'package:invoiso/common/setting_key.dart';
 import 'package:invoiso/models/company_profile.dart';
@@ -92,7 +94,16 @@ class CompanyRegistryService {
     }
   }
 
+  /// Server mode: companies live on the server; the device only remembers
+  /// which one was last used (same prefs key as the local registry).
+  static Future<List<CompanyProfile>> _serverCompanies() async => [
+        for (final c in await AppServer.connection.companies())
+          CompanyProfile(
+              id: c.id, name: c.name, dbFileName: '', createdAt: DateTime(2000)),
+      ];
+
   static Future<List<CompanyProfile>> listCompanies() async {
+    if (AppConfig.useServer) return _serverCompanies();
     final prefs = await SharedPreferences.getInstance();
     final companies = await _readRegistry(prefs);
     final activeId = prefs.getString(_activeCompanyIdPrefsKey);
@@ -120,7 +131,14 @@ class CompanyRegistryService {
 
   static Future<String?> getActiveCompanyId() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_activeCompanyIdPrefsKey);
+    final id = prefs.getString(_activeCompanyIdPrefsKey);
+    if (!AppConfig.useServer) return id;
+    // Logged in: the session's company. Otherwise the remembered one if the
+    // server still has it, else the server's first company.
+    if (AppServer.company != null) return AppServer.company!.id;
+    final companies = await _serverCompanies();
+    if (companies.any((c) => c.id == id)) return id;
+    return companies.firstOrNull?.id;
   }
 
   /// Active company's display name, live-resolved the same way
@@ -140,6 +158,9 @@ class CompanyRegistryService {
   /// Registers a new company and its own database file. Does not switch to
   /// it — call `switchToCompany` afterwards.
   static Future<CompanyProfile> createCompany(String name) async {
+    if (AppConfig.useServer) {
+      throw UnsupportedError('Use createCompanyOnServer in server mode');
+    }
     final prefs = await SharedPreferences.getInstance();
     final companies = await _readRegistry(prefs);
     final id = const Uuid().v4();
@@ -156,8 +177,26 @@ class CompanyRegistryService {
   /// Ignores an empty name or the seed placeholder — onboarding and Company
   /// Info sync whatever `company_info.name` holds, and on a fresh company DB
   /// that's still the placeholder, which must not replace a real label.
+  /// Server mode: creates the company with its own admin login (never the
+  /// seeded admin/admin). Admin only.
+  static Future<CompanyProfile> createCompanyOnServer(
+      String name, String adminUsername, String adminPassword) async {
+    final c = await AppServer.connection
+        .createCompany(name, adminUsername, adminPassword);
+    return CompanyProfile(
+        id: c.id, name: c.name, dbFileName: '', createdAt: DateTime.now());
+  }
+
   static Future<void> renameCompany(String id, String name) async {
     if (name.trim().isEmpty || name == seedCompanyName) return;
+    if (AppConfig.useServer) {
+      // Best effort: only admins may rename; the company's own company_info
+      // name (what PDFs print) is saved regardless.
+      try {
+        await AppServer.connection.renameCompany(id, name.trim());
+      } catch (_) {}
+      return;
+    }
     final prefs = await SharedPreferences.getInstance();
     final companies = await _readRegistry(prefs);
     await _writeRegistry(prefs, [
@@ -169,6 +208,10 @@ class CompanyRegistryService {
   /// callers are expected to check `canDelete` first and disable the action,
   /// this is the hard guarantee.
   static Future<void> deleteCompany(String id) async {
+    if (AppConfig.useServer) {
+      await AppServer.connection.deleteCompany(id);
+      return;
+    }
     final prefs = await SharedPreferences.getInstance();
     final companies = await _readRegistry(prefs);
     final activeId = prefs.getString(_activeCompanyIdPrefsKey);
@@ -194,6 +237,12 @@ class CompanyRegistryService {
   /// active. Safe to call whether or not a connection is already open.
   static Future<void> switchToCompany(String id) async {
     final prefs = await SharedPreferences.getInstance();
+    if (AppConfig.useServer) {
+      // A session belongs to one company: switching means logging in again.
+      if (AppServer.company?.id != id) AppServer.logout();
+      await prefs.setString(_activeCompanyIdPrefsKey, id);
+      return;
+    }
     final companies = await _readRegistry(prefs);
     final profile = companies.where((c) => c.id == id).firstOrNull;
     if (profile == null) {

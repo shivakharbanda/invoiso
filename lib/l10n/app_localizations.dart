@@ -9131,6 +9131,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Custom fields print on every PDF template except thermal receipts.'**
   String get invoiceSettingsCustomFieldsPageSupportNote;
+
+  /// No description provided for @serverSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Server'**
+  String get serverSettingsTitle;
+
+  /// No description provided for @serverSettingsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Server settings'**
+  String get serverSettingsTooltip;
+
+  /// No description provided for @serverSettingsUrlLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Server address'**
+  String get serverSettingsUrlLabel;
+
+  /// No description provided for @serverSettingsUrlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. https://your-app.up.railway.app or http://192.168.1.10:8080'**
+  String get serverSettingsUrlHint;
+
+  /// No description provided for @serverSettingsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data is stored on this server. Use the address of your Railway deployment or the machine running docker compose.'**
+  String get serverSettingsHelp;
+
+  /// No description provided for @serverSettingsTestButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Test connection'**
+  String get serverSettingsTestButton;
+
+  /// No description provided for @serverSettingsTesting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting…'**
+  String get serverSettingsTesting;
+
+  /// No description provided for @serverSettingsConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected — server version {version}'**
+  String serverSettingsConnected(String version);
+
+  /// No description provided for @serverSettingsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect: {error}'**
+  String serverSettingsFailed(String error);
 }
 
 class _AppLocalizationsDelegate

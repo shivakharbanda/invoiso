@@ -5335,4 +5335,37 @@ class AppLocalizationsBo extends AppLocalizations {
   @override
   String get invoiceSettingsCustomFieldsPageSupportNote =>
       'Custom fields print on every PDF template except thermal receipts.';
+
+  @override
+  String get serverSettingsTitle => 'Server';
+
+  @override
+  String get serverSettingsTooltip => 'Server settings';
+
+  @override
+  String get serverSettingsUrlLabel => 'Server address';
+
+  @override
+  String get serverSettingsUrlHint =>
+      'e.g. https://your-app.up.railway.app or http://192.168.1.10:8080';
+
+  @override
+  String get serverSettingsHelp =>
+      'Your data is stored on this server. Use the address of your Railway deployment or the machine running docker compose.';
+
+  @override
+  String get serverSettingsTestButton => 'Test connection';
+
+  @override
+  String get serverSettingsTesting => 'Connecting…';
+
+  @override
+  String serverSettingsConnected(String version) {
+    return 'Connected — server version $version';
+  }
+
+  @override
+  String serverSettingsFailed(String error) {
+    return 'Could not connect: $error';
+  }
 }

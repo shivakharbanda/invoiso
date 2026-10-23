@@ -1,4 +1,1 @@
-abstract class InstallationRepository
-{
-  Future<String> getOrCreateInstallationId();
-}
+export 'package:invoiso_core/repositories/installation_repository.dart';

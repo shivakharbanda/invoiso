@@ -19,6 +19,10 @@ import 'package:invoiso/screens/auth/change_password_screen.dart';
 import 'package:invoiso/screens/help/help_search_screen.dart';
 import 'package:invoiso/screens/settings/company_management_screen.dart';
 import 'package:invoiso/screens/test_gate_screen.dart';
+import 'package:invoiso/services/server/app_server.dart';
+import 'package:invoiso/utils/company_preferences.dart';
+import 'package:invoiso/widgets/server_settings_dialog.dart';
+import 'package:invoiso_core/rpc/rpc_client.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:invoiso/providers/app_config_provider.dart';
@@ -50,8 +54,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _loadCompanies() async {
-    final companies = await CompanyRegistryService.listCompanies();
-    final activeId = await CompanyRegistryService.getActiveCompanyId();
+    final List<CompanyProfile> companies;
+    final String? activeId;
+    try {
+      companies = await CompanyRegistryService.listCompanies();
+      activeId = await CompanyRegistryService.getActiveCompanyId();
+    } on RpcException catch (e) {
+      _showError(e.message);
+      return;
+    }
     if (!mounted) return;
     setState(() {
       _companies = companies;
@@ -67,6 +78,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _onCompanySelected(String? id) async {
     if (id == null || id == _activeCompanyId) return;
     await CompanyRegistryService.switchToCompany(id);
+    if (AppConfig.useServer) {
+      // Preferences are per company on the server; read after login.
+      _usernameController.clear();
+      _passwordController.clear();
+      setState(() => _activeCompanyId = id);
+      return;
+    }
     final themeKey = await ref.read(settingsRepositoryProvider).getThemeMode();
     final localeKey = await ref.read(settingsRepositoryProvider).getAppLocale();
     final purchaseBills = await ref
@@ -87,6 +105,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     await _checkFirstTimeUser();
   }
 
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  /// Server mode: change which server this device uses.
+  Future<void> _openServerSettings() async {
+    final url = await showServerSettingsDialog(context);
+    if (url == null || !mounted) return;
+    AppServer.useBaseUrl(url);
+    setState(() {
+      _companies = [];
+      _activeCompanyId = null;
+    });
+    await _loadCompanies();
+  }
+
   Future<void> _openCompanyManagement() async {
     await Navigator.push(
       context,
@@ -103,7 +139,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   // Show the hint only while admin/admin actually still works as a login.
   // Cloud edition has no seeded default account — skip the check entirely.
   Future<void> _checkFirstTimeUser() async {
-    if (ref.read(appEditionConfigProvider).isCloud) return;
+    if (ref.read(appEditionConfigProvider).isCloud || AppConfig.useServer) {
+      return;
+    }
     final user =
         await ref.read(authRepositoryProvider).getUser('admin', 'admin');
     if (!mounted || user == null) return;
@@ -138,7 +176,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!mounted) return;
     setState(() => _isLoading = true);
 
-    final user = await ref.read(authRepositoryProvider).getUser(username, password);
+    final User? user;
+    try {
+      user = await ref.read(authRepositoryProvider).getUser(username, password);
+    } on RpcException catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      _showError(e.message);
+      return;
+    }
 
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -157,6 +203,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _afterLoginNavigate(AppEditionConfig cfg, User user) async {
     if (TestBuildConfig.isTestBuild && !await _testGatePasses(cfg, user)) return;
+
+    if (AppConfig.useServer) {
+      try {
+        await loadCompanyPreferences(ref);
+        await refreshWindowTitle();
+      } on RpcException catch (e) {
+        _showError(e.message);
+      }
+    }
 
     if(cfg.isCloud)
     {
@@ -242,7 +297,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (!cfg.isCloud)
+                if (!cfg.isCloud && !AppConfig.useServer)
                   ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: cardWidth),
                     child: MouseRegion(
@@ -448,7 +503,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                         AppSpacing.hSmall,
-                        if (!cfg.isCloud)
+                        if (!cfg.isCloud && !AppConfig.useServer)
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
@@ -526,7 +581,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
           ),
-          if (!cfg.isCloud)
+          if (AppConfig.useServer)
+            Positioned(
+              right: 16,
+              bottom: 16,
+              child: TextButton.icon(
+                icon: const Icon(Icons.dns_outlined),
+                label: Text(AppLocalizations.of(context)!.serverSettingsTitle),
+                onPressed: _openServerSettings,
+              ),
+            )
+          else if (!cfg.isCloud)
             Positioned(
               right: 16,
               bottom: 16,

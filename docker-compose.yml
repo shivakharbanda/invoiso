@@ -1,0 +1,39 @@
+# Self-hosted invoiso server + Postgres.
+#   cp .env.example .env   # then set TOKEN_SECRET etc.
+#   docker compose up -d --build
+# The API is then at http://<this-machine>:8080 — enter that as the server
+# address in the app (login screen → Server settings).
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: invoiso
+      POSTGRES_USER: invoiso
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U invoiso -d invoiso"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://invoiso:${POSTGRES_PASSWORD}@db:5432/invoiso?sslmode=disable
+      TOKEN_SECRET: ${TOKEN_SECRET:?set TOKEN_SECRET in .env (32+ chars)}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:-}
+      PORT: 8080
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+
+volumes:
+  pgdata:

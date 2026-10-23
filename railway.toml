@@ -1,0 +1,15 @@
+# Railway: deploys the API server from server/Dockerfile.
+# Add a Postgres service in the same project and set these variables on the
+# server service:
+#   DATABASE_URL  = ${{Postgres.DATABASE_URL}}?sslmode=disable   (private network)
+#   TOKEN_SECRET  = 32+ random characters
+#   INITIAL_ADMIN_PASSWORD = (optional, first boot only)
+# Railway injects PORT itself.
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "server/Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 60
+restartPolicyType = "ON_FAILURE"

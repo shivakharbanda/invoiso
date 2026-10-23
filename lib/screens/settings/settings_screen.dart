@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:invoiso/common/app_config.dart';
 import 'package:invoiso/common/constants.dart';
+import 'package:invoiso/screens/settings/server_data_screen.dart';
 import 'package:invoiso/common/common.dart';
 import 'package:invoiso/l10n/app_localizations.dart';
 import 'package:invoiso/providers/app_config_provider.dart';
@@ -194,7 +196,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       case _idCompanyInfo:
         return const CompanyInfoScreen();
       case _idBackup:
-        return BackupManagementScreen();
+        return AppConfig.useServer
+            ? const ServerDataScreen()
+            : BackupManagementScreen();
       case _idUsers:
         return UserManagementScreenV2(
           currentUser: widget.currentUser,

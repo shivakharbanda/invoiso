@@ -82,3 +82,6 @@ lib/screens/test_old_screens/
 android/build/
 
 gh_actions_cleanup.py
+
+# Server secrets (docker compose)
+.env

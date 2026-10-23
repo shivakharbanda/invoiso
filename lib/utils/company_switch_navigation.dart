@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:invoiso/common/app_config.dart';
 import 'package:invoiso/common/setting_key.dart';
 import 'package:invoiso/providers/invoice_provider.dart';
 import 'package:invoiso/providers/locale_provider.dart';
@@ -28,6 +29,17 @@ Future<void> returnToLoginAfterCompanyChange(
     BuildContext context, WidgetRef ref) async {
   ref.invalidate(invoicesProvider);
   ref.invalidate(productsProvider);
+
+  // Server mode: switching dropped the session, so the new company's
+  // preferences are loaded after logging in to it.
+  if (AppConfig.useServer) {
+    if (!context.mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+    return;
+  }
 
   final themeKey = await ref.read(settingsRepositoryProvider).getThemeMode();
   final localeKey = await ref.read(settingsRepositoryProvider).getAppLocale();

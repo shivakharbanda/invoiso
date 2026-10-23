@@ -1,0 +1,24 @@
+name: invoiso_server
+description: HTTP API for the invoiso apps — runs the shared services on Postgres, one schema per company.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.3.3 <4.0.0'
+
+dependencies:
+  crypto: ^3.0.3
+  invoiso_core:
+    path: ../packages/invoiso_core
+  invoiso_pg:
+    path: ../packages/invoiso_pg
+  postgres: ^3.4.0
+  shelf: ^1.4.1
+  shelf_router: ^1.1.4
+  sqflite_common: ^2.5.6
+  sqflite_common_ffi: ^2.3.6
+
+dev_dependencies:
+  http: ^1.2.0
+  lints: ^5.0.0
+  test: ^1.24.0

@@ -389,6 +389,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.20.2"
+  invoiso_core:
+    dependency: "direct main"
+    description:
+      path: "packages/invoiso_core"
+      relative: true
+    source: path
+    version: "0.1.0"
   json_annotation:
     dependency: transitive
     description:

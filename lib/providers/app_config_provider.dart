@@ -43,7 +43,7 @@ class AppEditionConfig {
   });
 }
 
-final appEditionConfigProvider = Provider<AppEditionConfig>((ref) => const AppEditionConfig(
+final appEditionConfigProvider = Provider<AppEditionConfig>((ref) => AppEditionConfig(
       name: AppConfig.name,
       version: AppConfig.version,
       developer: AppConfig.developer,
@@ -53,6 +53,6 @@ final appEditionConfigProvider = Provider<AppEditionConfig>((ref) => const AppEd
       description: AppConfig.description,
       additionalNote: DefaultValues.additionalNote,
       thankYouNote: DefaultValues.thankYouNote,
-      enableUpdateCheck: UpdateConfig.enableUpdateCheck,
+      enableUpdateCheck: UpdateConfig.enableUpdateCheck && !AppConfig.useServer,
       isCloud: AppConfig.kIsCloud
     ));

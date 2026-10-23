@@ -3,6 +3,7 @@
 // invoice days, invoice / cash-exchange lines per day, and the CSV columns.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:invoiso/database/report_service.dart';
+import 'package:invoiso/services/report_export_service.dart';
 import 'package:invoiso/models/report_models.dart';
 
 void main() {
@@ -50,12 +51,12 @@ void main() {
 
   test('CSV: Type and Cash / UPI-Bank columns only when asked', () {
     final lines = ReportService.dailyLines(rows, exchanges: true);
-    final off = ReportService.exportDailyReportCsv(
+    final off = ReportExportService.exportDailyReportCsv(
             ReportService.dailyLines(rows))
         .split('\n');
     expect(off.first, isNot(contains('Cash')));
     final on =
-        ReportService.exportDailyReportCsv(lines, cashUpi: true).split('\n');
+        ReportExportService.exportDailyReportCsv(lines, cashUpi: true).split('\n');
     expect(on.first, startsWith('"Date","Type","Count"'));
     expect(on.first, endsWith('"Cash","UPI/Bank"'));
     // Exchange line: profit = fee, no sales / COGS / margin.
