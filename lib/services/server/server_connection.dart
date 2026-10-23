@@ -11,8 +11,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// sets the default.
 class ServerSettings {
   static const _key = 'server_base_url';
+
+  /// Baked in by the release pipeline (repo variable API_BASE_URL); CI passes
+  /// an empty value when the variable isn't set, hence the fallback.
+  static const _builtBaseUrl = String.fromEnvironment('API_BASE_URL');
   static const defaultBaseUrl =
-      String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:8080');
+      _builtBaseUrl == '' ? 'http://localhost:8080' : _builtBaseUrl;
 
   static Future<String> load() async {
     final prefs = await SharedPreferences.getInstance();

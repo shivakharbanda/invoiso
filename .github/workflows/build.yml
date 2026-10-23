@@ -61,7 +61,7 @@ jobs:
       #          CMAKE_GENERATOR: "Visual Studio 17 2022"
 
       - name: Build Windows Installer with FastForge
-        run: fastforge package --platform windows --targets exe
+        run: fastforge package --platform windows --targets exe --build-dart-define=API_BASE_URL=${{ vars.API_BASE_URL }}
         env:
           CMAKE_GENERATOR: "Visual Studio 17 2022"
 
@@ -126,11 +126,11 @@ jobs:
         run: flutter pub get
 
       #      - name: Build Flutter Linux Release
-      #        run: flutter build linux --release
+      #        run: flutter build linux --release --dart-define=API_BASE_URL=${{ vars.API_BASE_URL }}
 
       - name: Build .deb Package
         run: |
-          fastforge package --platform linux --targets deb
+          fastforge package --platform linux --targets deb --build-dart-define=API_BASE_URL=${{ vars.API_BASE_URL }}
           VERSION="${GITHUB_REF#refs/tags/}"
           VERSION="${VERSION#test-v}"
           VERSION="${VERSION#v}"
@@ -189,11 +189,11 @@ jobs:
         run: flutter pub get
 
       #      - name: Build Flutter Linux Release
-      #        run: flutter build linux --release
+      #        run: flutter build linux --release --dart-define=API_BASE_URL=${{ vars.API_BASE_URL }}
 
       - name: Build .deb Package
         run: |
-          fastforge package --platform linux --targets deb
+          fastforge package --platform linux --targets deb --build-dart-define=API_BASE_URL=${{ vars.API_BASE_URL }}
           VERSION="${GITHUB_REF#refs/tags/}"
           VERSION="${VERSION#test-v}"
           VERSION="${VERSION#v}"
@@ -285,7 +285,7 @@ jobs:
 #        run: flutter pub get
 #
 #      - name: Build Flutter Linux Release
-#        run: flutter build linux --release
+#        run: flutter build linux --release --dart-define=API_BASE_URL=${{ vars.API_BASE_URL }}
 #
 #      - name: Bundle libstdc++ into AppDir
 #        run: |
@@ -368,7 +368,7 @@ jobs:
         run: flutter pub get
 
       - name: Build Flutter Linux Release
-        run: flutter build linux --release
+        run: flutter build linux --release --dart-define=API_BASE_URL=${{ vars.API_BASE_URL }}
 
       - name: Prepare AppDir
         run: |
@@ -484,7 +484,7 @@ jobs:
         run: flutter pub get
 
       - name: Build Flutter Linux Release
-        run: flutter build linux --release
+        run: flutter build linux --release --dart-define=API_BASE_URL=${{ vars.API_BASE_URL }}
 
       - name: Prepare AppDir
         run: |
@@ -618,7 +618,7 @@ jobs:
           iconutil -c icns "$ICONSET" -o macos/packaging/dmg/AppIcon.icns
 
       - name: Build macOS DMG with FastForge
-        run: fastforge package --platform macos --targets dmg
+        run: fastforge package --platform macos --targets dmg --build-dart-define=API_BASE_URL=${{ vars.API_BASE_URL }}
 
       - name: Rename DMG
         run: |
