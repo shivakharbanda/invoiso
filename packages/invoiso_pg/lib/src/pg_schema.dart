@@ -229,6 +229,43 @@ class SchemaSync {
     return counts;
   }
 
+  /// The reverse of [copyFromSqlite]: writes every canonical table of
+  /// [schema] into [target] (an invoiso SQLite database at the current
+  /// version, e.g. from [createEmptySqlite]), replacing its rows. The result
+  /// opens in the desktop app and imports into any server.
+  Future<Map<String, int>> copyToSqlite(
+      pg.Session s, String schema, Database target) async {
+    await s.execute('SET search_path TO "$schema", public');
+    final counts = <String, int>{};
+    for (final t in _tables) {
+      final cols = [for (final c in t.columns) c.name];
+      final rows = await s.execute(
+          'SELECT ${cols.map((c) => '"$c"').join(', ')} FROM "${t.name}" ORDER BY rowid');
+      await target.delete(t.name);
+      final batch = target.batch();
+      for (final r in rows) {
+        batch.insert(t.name, {
+          for (var i = 0; i < cols.length; i++)
+            cols[i]: r[i] is bool ? ((r[i] as bool) ? 1 : 0) : r[i],
+        });
+      }
+      await batch.commit(noResult: true);
+      counts[t.name] = rows.length;
+    }
+    return counts;
+  }
+
+  /// A new SQLite file with the app's current schema (seed rows included —
+  /// [copyToSqlite] replaces them).
+  static Future<Database> createEmptySqlite(String path) {
+    sqfliteFfiInit();
+    final helper = DatabaseHelper();
+    return databaseFactoryFfi.openDatabase(path,
+        options: OpenDatabaseOptions(
+            version: helper.dbVersion,
+            onCreate: (db, _) => helper.createSchema(db)));
+  }
+
   /// New company: schema + tables + the same seed rows a fresh desktop
   /// install gets (default admin user, settings defaults, company stub).
   Future<void> createCompany(pg.Session s, String schema) async {

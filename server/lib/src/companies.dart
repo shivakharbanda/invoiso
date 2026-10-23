@@ -93,6 +93,11 @@ class CompanyStore {
     return (Company(id, name, schema), counts);
   }
 
+  /// Copies [company]'s data into [target] (see SchemaSync.copyToSqlite).
+  Future<Map<String, int>> exportTo(Company company, Database target) =>
+      _pool.withConnection(
+          (conn) => _sync.copyToSqlite(conn, company.schema, target));
+
   Future<void> rename(String id, String name) => _pool.execute(
       r'UPDATE public.companies SET name = $2 WHERE id = $1',
       parameters: [id, name]);

@@ -67,7 +67,8 @@ class InvoisoApi {
       ..post('/admin/companies', _createCompany)
       ..patch('/admin/companies/<id>', _renameCompany)
       ..delete('/admin/companies/<id>', _deleteCompany)
-      ..post('/admin/import', _import);
+      ..post('/admin/import', _import)
+      ..get('/admin/export', _export);
     return const Pipeline()
         .addMiddleware(_errors)
         .addHandler(router.call);
@@ -229,6 +230,33 @@ class InvoisoApi {
     await _company(id);
     await _companies.delete(id);
     return Response(204);
+  }
+
+  /// Downloads a company (default: the caller's) as an invoiso SQLite `.db`
+  /// — a full backup that opens in the desktop app or imports into another
+  /// server via /admin/import. `?companyId=` picks another company (admin).
+  Future<Response> _export(Request req) async {
+    final s = _admin(req);
+    final company = await _company(req.url.queryParameters['companyId'] ?? s.companyId);
+    final dir = await Directory.systemTemp.createTemp('invoiso_export');
+    try {
+      final path = '${dir.path}/export.db';
+      final sqlite = await SchemaSync.createEmptySqlite(path);
+      try {
+        await _companies.exportTo(company, sqlite);
+      } finally {
+        await sqlite.close();
+      }
+      final bytes = await File(path).readAsBytes();
+      final stamp = DateTime.now().toUtc().toIso8601String().substring(0, 10);
+      final safeName = company.name.replaceAll(RegExp(r'[^A-Za-z0-9_-]+'), '_');
+      return Response.ok(bytes, headers: {
+        'content-type': 'application/octet-stream',
+        'content-disposition': 'attachment; filename="invoiso_${safeName}_$stamp.db"',
+      });
+    } finally {
+      await dir.delete(recursive: true);
+    }
   }
 
   /// One-time migration of a desktop install: the body is the company's
