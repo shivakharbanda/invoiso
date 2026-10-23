@@ -1,7 +1,7 @@
-# invoiso API server. Build context = repository root (the server depends on
-# packages/invoiso_core and packages/invoiso_pg):
-#   docker build -f server/Dockerfile -t invoiso-server .
-# Railway uses this via railway.toml; docker-compose.yml builds it too.
+# invoiso API server (code in server/; it depends on packages/invoiso_core
+# and packages/invoiso_pg, hence the repository-root location):
+#   docker build -t invoiso-server .
+# Railway builds this file automatically; docker-compose.yml builds it too.
 
 # Dart version matches the Flutter SDK the app is built with (3.32.8).
 FROM dart:3.8.1 AS build

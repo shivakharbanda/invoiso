@@ -1,8 +1,26 @@
-# Only the server and its packages go into the image.
-*
-!packages/invoiso_core/
-!packages/invoiso_pg/
-!server/
-**/.dart_tool/
-**/build/
-**/.packages
+# The server image needs only server/ and packages/. Exclude the Flutter app
+# and build output (a deny-list: Railway applies this file to the repo
+# snapshot before reading railway.toml / the Dockerfile, so an
+# exclude-everything pattern would hide those too).
+.git
+.github
+**/.dart_tool
+**/build
+dist
+android
+ios
+linux
+macos
+windows
+web
+lib
+test
+test_support
+assets
+landing
+screenshots
+output
+tool
+.idea
+.vscode
+.env
